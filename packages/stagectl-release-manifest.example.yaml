@@ -1,0 +1,37 @@
+# Copyright (c) StagePlane contributors.
+#
+# Architectural intent:
+#   Example release manifest for a promoted stagectl binary set. Public baseline
+#   repositories use this contract to pin the controller version without storing
+#   a single architecture-specific binary in Git.
+#
+# Ownership boundary:
+#   This file documents release metadata only.
+#
+# Non-responsibilities:
+#   It does not contain licenses, secrets, cloud credentials, or customer data.
+
+apiVersion: stageplane.io/v1
+kind: StagectlReleaseManifest
+metadata:
+  version: "20260502060000"
+spec:
+  source_repo: "stageplane/stagectl-releases"
+  release_tag: "v20260502060000"
+  controller_source: "stageplane/stageplane-private-source-with-build-release"
+  assets:
+    darwin_arm64:
+      name: "stagectl-darwin-arm64"
+      sha256: "replace-with-sha256"
+    darwin_amd64:
+      name: "stagectl-darwin-amd64"
+      sha256: "replace-with-sha256"
+    linux_amd64:
+      name: "stagectl-linux-amd64"
+      sha256: "replace-with-sha256"
+    linux_arm64:
+      name: "stagectl-linux-arm64"
+      sha256: "replace-with-sha256"
+    windows_amd64:
+      name: "stagectl-windows-amd64.exe"
+      sha256: "replace-with-sha256"

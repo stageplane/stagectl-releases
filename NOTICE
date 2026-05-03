@@ -1,0 +1,5 @@
+StagePlane stagectl release distribution repository
+Copyright (c) StagePlane contributors.
+
+This repository contains public installer and release-manifest assets for the
+StagePlane stagectl binary. It does not contain private controller source code.

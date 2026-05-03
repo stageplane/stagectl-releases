@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# Copyright (c) StagePlane contributors.
+#
+# Architectural intent:
+#   Repository-local stagectl shim for public infrastructure baselines. This
+#   wrapper avoids committing one architecture-specific binary while preserving
+#   the ergonomic `./bin/stagectl ...` workflow for operators and CI.
+#
+# Ownership boundary:
+#   The shim owns cache discovery and delegation to the public installer.
+#
+# Non-responsibilities:
+#   It does not build stagectl, issue licenses, configure cloud credentials, or
+#   mutate infrastructure directly.
+
+set -euo pipefail
+
+VERSION="${STAGECTL_VERSION:-20260502060000}"
+CACHE_DIR="${STAGECTL_CACHE_DIR:-${HOME}/.stageplane/bin}"
+INSTALLER_URL="${STAGECTL_INSTALLER_URL:-https://raw.githubusercontent.com/stageplane/stagectl-releases/main/install.sh}"
+OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+EXT=""
+if [[ "${OS}" == msys* || "${OS}" == mingw* || "${OS}" == cygwin* ]]; then
+  EXT=".exe"
+fi
+TARGET="${CACHE_DIR}/stagectl${EXT}"
+
+if [[ ! -x "${TARGET}" ]] || [[ "$("${TARGET}" version 2>/dev/null || true)" != "${VERSION}" ]]; then
+  mkdir -p "${CACHE_DIR}"
+  curl -fsSL "${INSTALLER_URL}" | \
+    STAGECTL_VERSION="${VERSION}" \
+    STAGECTL_INSTALL_DIR="${CACHE_DIR}" \
+    STAGECTL_BINARY_NAME="stagectl" \
+    bash
+fi
+
+exec "${TARGET}" "$@"

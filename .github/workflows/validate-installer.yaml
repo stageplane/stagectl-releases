@@ -1,0 +1,55 @@
+# Copyright (c) StagePlane contributors.
+#
+# Architectural intent:
+#   Validates the public installer and shell wrapper without publishing or
+#   downloading production artifacts. This keeps the artifact-distribution repo
+#   safe to change independently from the private controller source repo.
+#
+# Ownership boundary:
+#   This workflow owns shell syntax validation and repository hygiene checks.
+#
+# Non-responsibilities:
+#   It does not build stagectl, publish release assets, or mutate external repos.
+
+name: Validate installer
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Validate shell syntax
+        run: |
+          bash -n install.sh
+          bash -n shims/stagectl
+
+      - name: Validate required files
+        run: |
+          test -f README.md
+          test -f install.sh
+          test -f shims/stagectl
+          test -f packages/stagectl-release-manifest.example.yaml
+          test -f docs/INSTALL.md
+          test -f docs/RELEASE_MODEL.md
+
+      - name: Validate no binary artifacts are committed
+        run: |
+          if find . -type f -perm -111 \
+              ! -path './install.sh' \
+              ! -path './shims/stagectl' \
+              ! -path './.git/*' \
+              | grep -q .; then
+            echo 'Unexpected executable artifact committed to release repo.' >&2
+            find . -type f -perm -111 ! -path './install.sh' ! -path './shims/stagectl' ! -path './.git/*' >&2
+            exit 1
+          fi
